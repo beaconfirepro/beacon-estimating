@@ -57,7 +57,7 @@ export default function SprinklerInputForm({ inputs, onChange }) {
         <Row label='6" Pipe'   field="pipe_6in_lf"    inputs={inputs} onChange={onChange} suffix="LF" />
       </Section>
 
-      <Section title="Threaded Fittings (1\" – 2\")">
+      <Section title='Threaded Fittings (1" - 2")'>
         <SubSection title="Elbows">
           <Row label='Elbow 1" Threaded'   field="thr_elbow_1in"    inputs={inputs} onChange={onChange} />
           <Row label='Elbow 1¼" Threaded'  field="thr_elbow_1_25in" inputs={inputs} onChange={onChange} />
