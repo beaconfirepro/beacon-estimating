@@ -249,20 +249,14 @@ export default function TakeoffCard({ takeoff, type, onUpdate, onDelete }) {
                 </div>
               )}
 
-              {/* Save */}
+              {/* Footer */}
               <div className="flex items-center justify-between pt-2 border-t border-border">
                 <div className="text-sm font-bold text-foreground">
                   Section Total: <span className="text-accent">${fmt(totalSection)}</span>
                 </div>
-                <Button
-                  onClick={handleSave}
-                  disabled={saving}
-                  size="sm"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
-                >
-                  <Save className="w-3 h-3" />
-                  {saving ? "Saving..." : "Save Section"}
-                </Button>
+                <div className="text-xs text-muted-foreground flex items-center gap-1">
+                  {saving ? "Saving..." : autoSaved ? <><Check className="w-3 h-3 text-green-500" /> Saved</> : "Auto-saves"}
+                </div>
               </div>
             </div>
           </motion.div>
