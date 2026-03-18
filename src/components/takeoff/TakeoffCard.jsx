@@ -53,22 +53,36 @@ export default function TakeoffCard({ takeoff, type, onUpdate, onDelete }) {
     setInputs(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = async () => {
+  const doSave = async (currentInputs, currentResult) => {
     setSaving(true);
     const updated = {
       ...takeoff,
-      area_name: inputs.area_name,
-      formula_inputs: inputs,
-      labor_items: result.labor_items,
-      material_items: result.material_items,
-      total_labor: result.total_labor,
-      total_material: result.total_material,
-      total_design: inputs.total_design || 0,
+      area_name: currentInputs.area_name,
+      formula_inputs: currentInputs,
+      labor_items: currentResult.labor_items,
+      material_items: currentResult.material_items,
+      total_labor: currentResult.total_labor,
+      total_material: currentResult.total_material,
+      total_design: currentInputs.total_design || 0,
     };
     await onUpdate(updated);
     setSaving(false);
-    toast.success("Section saved!");
+    setAutoSaved(true);
+    setTimeout(() => setAutoSaved(false), 2000);
   };
+
+  // Auto-save debounced when inputs or result change
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      doSave(inputs, result);
+    }, 1500);
+    return () => clearTimeout(debounceRef.current);
+  }, [inputs, result]);
 
   const fmt = (n) => (n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const totalSection = result.total_labor + result.total_material + (inputs.total_design || 0);
