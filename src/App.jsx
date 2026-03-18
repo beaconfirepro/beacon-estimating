@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Dashboard from './pages/Dashboard';
 import ProjectDetail from './pages/ProjectDetail';
+import PriceList from './pages/PriceList';
 import { Toaster as Sonner } from "sonner";
 
 const AuthenticatedApp = () => {
@@ -34,6 +35,7 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/project/:id" element={<ProjectDetail />} />
+      <Route path="/price-list" element={<PriceList />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
