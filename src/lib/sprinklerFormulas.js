@@ -1,9 +1,24 @@
 /**
  * Sprinkler Takeoff Formula Engine
- * 
- * Users enter individual fitting counts (elbows, tees, couplings, reducers, etc.)
- * The engine sums them into labor categories and maps each to a material line item.
  */
+
+// ── Criteria multiplier tables ────────────────────────────────────────────
+
+// Labor classification: adjusts the base labor factor (1 = easiest, 5 = hardest)
+const LABOR_CLASS_MULTIPLIER = { 1: 0.85, 2: 0.92, 3: 1.00, 4: 1.10, 5: 1.20 };
+
+// Hoisting / vertical distribution: adds to pipe & head labor
+const HOISTING_ADDER = { none: 0, "20ft": 0.05, "40ft": 0.10, "60ft+": 0.15 };
+
+// Project size: small jobs are less efficient
+const PROJECT_SIZE_MULTIPLIER = { small: 1.15, medium: 1.00, large: 0.92 };
+
+// System type: dry/preaction adds labor due to complexity
+const SYSTEM_TYPE_MULTIPLIER = { wet: 1.00, dry: 1.12, preaction: 1.18 };
+
+// Seismic: adds a factor to all pipe labor when active
+const SEISMIC_MAINS_ADDER = 0.03;   // added to per-LF factors on 2.5"+ mains
+const SEISMIC_LINES_ADDER = 0.02;   // added to per-LF factors on 1"-2" branch
 
 export function calculateSprinklerTakeoff(inputs, materialPriceMap = {}) {
   const {
