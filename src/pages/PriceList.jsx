@@ -60,6 +60,13 @@ function PriceRow({ item, onSave, onDelete, isActive, onSetActive }) {
           {isActive && <CheckCircle className="w-3 h-3 text-primary-foreground" />}
         </button>
       </td>
+      <td className="px-3 py-2 text-right">
+        {editing ? (
+          <Input type="date" value={draft.last_updated || ""} onChange={e => f("last_updated", e.target.value)} className="h-7 text-xs w-28" />
+        ) : (
+          <span className="text-xs text-muted-foreground">{item.last_updated || <span className="italic">—</span>}</span>
+        )}
+      </td>
       <td className="px-3 py-2">
         <div className="flex items-center gap-1 justify-end">
           {editing ? (
@@ -118,6 +125,7 @@ function PartGroup({ partName, items, activeIds, onSave, onDelete, onAddVendor, 
                 <th className="px-3 py-2 text-right font-semibold">Our Price</th>
                 <th className="px-3 py-2 text-right font-semibold">List Price</th>
                 <th className="px-3 py-2 text-center font-semibold w-16">Active</th>
+                <th className="px-3 py-2 text-right font-semibold w-28">Last Updated</th>
                 <th className="px-3 py-2 w-24"></th>
               </tr>
             </thead>
