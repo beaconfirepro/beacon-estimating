@@ -140,6 +140,13 @@ export default function ProjectDetail() {
             />
           </TabsContent>
 
+          <TabsContent value="headlayout">
+            <HeadLayout
+              sprinklerTakeoffs={sprinklerTakeoffs}
+              standpipeTakeoffs={standpipeTakeoffs}
+            />
+          </TabsContent>
+
           <TabsContent value="sprinkler">
             <SprinklerTakeoffSection
               projectId={id}
