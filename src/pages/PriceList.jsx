@@ -542,8 +542,10 @@ export default function PriceList() {
 
   // Part handlers
   const handlePartSave = async (draft) => {
-    await base44.entities.MaterialPrice.update(draft.id, draft);
-    setItems(prev => prev.map(i => i.id === draft.id ? { ...i, ...draft } : i));
+    const today = new Date().toISOString().split("T")[0];
+    const withDate = { ...draft, last_updated: draft.last_updated || today };
+    await base44.entities.MaterialPrice.update(withDate.id, withDate);
+    setItems(prev => prev.map(i => i.id === withDate.id ? { ...i, ...withDate } : i));
     toast.success("Price updated");
   };
 
@@ -554,7 +556,8 @@ export default function PriceList() {
   };
 
   const handlePartCreate = async (data) => {
-    const created = await base44.entities.MaterialPrice.create(data);
+    const today = new Date().toISOString().split("T")[0];
+    const created = await base44.entities.MaterialPrice.create({ last_updated: today, ...data });
     setItems(prev => [...prev, created]);
     setShowNewPartForm(false);
     setAddVendorFor(null);
