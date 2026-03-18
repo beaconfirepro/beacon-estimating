@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus, FolderOpen, TrendingUp, Clock, CheckCircle2, FileText } from "lucide-react";
+import { Plus, FolderOpen, TrendingUp, Clock, CheckCircle2, FileText, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -48,12 +48,20 @@ export default function Dashboard() {
             <h1 className="text-3xl font-bold text-foreground tracking-tight">Project Estimates</h1>
             <p className="text-muted-foreground mt-1">Beacon Fire Protection — Estimating Platform</p>
           </div>
-          <Link to="/project/new">
-            <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold gap-2 shadow-lg">
-              <Plus className="w-4 h-4" />
-              New Estimate
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link to="/price-list">
+              <Button variant="outline" className="gap-2 font-medium">
+                <Package className="w-4 h-4" />
+                Price List
+              </Button>
+            </Link>
+            <Link to="/project/new">
+              <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold gap-2 shadow-lg">
+                <Plus className="w-4 h-4" />
+                New Estimate
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Stats */}
