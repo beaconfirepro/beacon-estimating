@@ -9,17 +9,20 @@ import { Save, Check } from "lucide-react";
 export default function ProjectInfoForm({ project, onSave, saving }) {
   const [form, setForm] = useState(project || {});
   const [autoSaved, setAutoSaved] = useState(false);
-  const isNew = !project?.id;
+  const [hasSavedOnce, setHasSavedOnce] = useState(!!project?.id);
   const debounceRef = useRef(null);
   const isFirstRender = useRef(true);
 
   useEffect(() => {
-    if (project) setForm(project);
+    if (project) {
+      setForm(project);
+      if (project.id) setHasSavedOnce(true);
+    }
   }, [project]);
 
-  // Auto-save for existing projects only
+  // Auto-save always — for new projects, first save creates it; subsequent saves update it
   useEffect(() => {
-    if (isNew || isFirstRender.current) {
+    if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
@@ -27,6 +30,7 @@ export default function ProjectInfoForm({ project, onSave, saving }) {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       await onSave(form);
+      setHasSavedOnce(true);
       setAutoSaved(true);
       setTimeout(() => setAutoSaved(false), 2000);
     }, 1500);
