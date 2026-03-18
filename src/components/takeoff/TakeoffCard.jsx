@@ -174,7 +174,7 @@ export default function TakeoffCard({ takeoff, type, onUpdate, onDelete }) {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                     <Eye className="w-3 h-3" />
-                    Auto-calculated from your inputs. Save to persist.
+                    Auto-calculated from your inputs.
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
