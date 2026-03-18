@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChevronDown, ChevronUp, Trash2, Save, Eye } from "lucide-react";
+import { ChevronDown, ChevronUp, Trash2, Check, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import SprinklerInputForm from "./SprinklerInputForm";
@@ -13,7 +13,10 @@ export default function TakeoffCard({ takeoff, type, onUpdate, onDelete }) {
   const [expanded, setExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState("inputs");
   const [saving, setSaving] = useState(false);
+  const [autoSaved, setAutoSaved] = useState(false);
   const [materialPrices, setMaterialPrices] = useState([]);
+  const debounceRef = useRef(null);
+  const isFirstRender = useRef(true);
 
   // inputs drive the formula engine
   const [inputs, setInputs] = useState({

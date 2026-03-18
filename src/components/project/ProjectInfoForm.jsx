@@ -1,17 +1,37 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Save } from "lucide-react";
+import { Save, Check } from "lucide-react";
 
 export default function ProjectInfoForm({ project, onSave, saving }) {
   const [form, setForm] = useState(project || {});
+  const [autoSaved, setAutoSaved] = useState(false);
+  const isNew = !project?.id;
+  const debounceRef = useRef(null);
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
     if (project) setForm(project);
   }, [project]);
+
+  // Auto-save for existing projects only
+  useEffect(() => {
+    if (isNew || isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (!form.project_name) return;
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      await onSave(form);
+      setAutoSaved(true);
+      setTimeout(() => setAutoSaved(false), 2000);
+    }, 1500);
+    return () => clearTimeout(debounceRef.current);
+  }, [form]);
 
   const field = (key) => ({
     value: form[key] || "",
