@@ -119,20 +119,19 @@ export default function ProjectInfoForm({ project, onSave, saving }) {
         />
       </div>
 
-      {isNew ? (
-        <Button
-          onClick={() => onSave(form)}
-          disabled={!form.project_name || saving}
-          className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2"
-        >
-          <Save className="w-4 h-4" />
-          {saving ? "Saving..." : "Save Project"}
-        </Button>
-      ) : (
-        <div className="text-sm text-muted-foreground flex items-center gap-1.5 h-9">
-          {saving ? "Saving..." : autoSaved ? <><Check className="w-4 h-4 text-green-500" /> Saved</> : "Changes auto-save"}
-        </div>
-      )}
+      <div className="text-sm text-muted-foreground flex items-center gap-1.5 h-9">
+        {!form.project_name ? (
+          <span className="text-muted-foreground/60">Enter a project name to auto-save</span>
+        ) : saving ? (
+          "Saving..."
+        ) : autoSaved ? (
+          <><Check className="w-4 h-4 text-green-500" /> {hasSavedOnce ? "Saved" : "Project Created!"}</>
+        ) : hasSavedOnce ? (
+          "Changes auto-save"
+        ) : (
+          <span className="text-amber-500">Will auto-save in 1.5s…</span>
+        )}
+      </div>
     </div>
   );
 }
