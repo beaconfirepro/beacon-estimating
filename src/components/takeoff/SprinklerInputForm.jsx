@@ -84,7 +84,7 @@ export default function SprinklerInputForm({ inputs, onChange }) {
         </SubSection>
       </Section>
 
-      <Section title="Grooved Fittings (2½\" – 6\")">
+      <Section title='Grooved Fittings (2½" - 6")'>
         <SubSection title="Couplings">
           <Row label='Coupling 2½" Grooved' field="grv_coupling_2_5in" inputs={inputs} onChange={onChange} />
           <Row label='Coupling 3" Grooved'  field="grv_coupling_3in"   inputs={inputs} onChange={onChange} />
