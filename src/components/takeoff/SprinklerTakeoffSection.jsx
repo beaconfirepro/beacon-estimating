@@ -16,8 +16,9 @@ export default function SprinklerTakeoffSection({ projectId, takeoffs, onUpdate 
       project_id: projectId,
       area_name: `Area ${takeoffs.length + 1}`,
       section_number: takeoffs.length + 1,
-      labor_items: DEFAULT_SPRINKLER_LABOR_ITEMS.map(item => ({ ...item, quantity: 0, total: 0 })),
-      material_items: DEFAULT_SPRINKLER_MATERIAL_ITEMS.map(item => ({ ...item, quantity: 0, total: 0 })),
+      formula_inputs: { ...DEFAULT_SPRINKLER_INPUTS, labor_rate: 85 },
+      labor_items: [],
+      material_items: [],
       total_labor: 0,
       total_material: 0,
       total_design: 0
