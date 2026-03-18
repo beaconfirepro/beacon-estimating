@@ -356,6 +356,13 @@ export const DEFAULT_SPRINKLER_INPUTS = {
   // Misc
   vertical_riser_lf: 0,
   hoisting_floors: 0,
+  // Criteria selectors
+  labor_class: 1,
+  hoisting_type: "none",
+  project_size: "medium",
+  system_type: "wet",
+  seismic_mains: "no",
+  seismic_lines: "no",
   // Rates
   labor_rate: 85,
   total_design: 0,
