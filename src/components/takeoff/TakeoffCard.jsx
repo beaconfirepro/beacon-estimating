@@ -37,11 +37,15 @@ export default function TakeoffCard({ takeoff, type, onUpdate, onDelete }) {
 
   const updateMaterialItem = (idx, field, value) => {
     const items = [...(data.material_items || [])];
-    items[idx] = { ...items[idx], [field]: value };
-    if (field === "quantity" || field === "price") {
-      const q = field === "quantity" ? parseFloat(value) || 0 : parseFloat(items[idx].quantity) || 0;
-      const p = field === "price" ? parseFloat(value) || 0 : parseFloat(items[idx].price) || 0;
-      items[idx].total = q * p;
+    if (field === "_batch") {
+      items[idx] = { ...items[idx], ...value };
+    } else {
+      items[idx] = { ...items[idx], [field]: value };
+      if (field === "quantity" || field === "price") {
+        const q = field === "quantity" ? parseFloat(value) || 0 : parseFloat(items[idx].quantity) || 0;
+        const p = field === "price" ? parseFloat(value) || 0 : parseFloat(items[idx].price) || 0;
+        items[idx].total = q * p;
+      }
     }
     setData(recalcTotals({ ...data, material_items: items }));
   };
