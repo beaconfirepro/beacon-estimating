@@ -123,6 +123,9 @@ export default function TakeoffCard({ takeoff, type, onUpdate, onDelete }) {
                 </div>
               </div>
 
+              {/* Criteria Selectors */}
+              <SprinklerCriteriaSelectors inputs={inputs} onChange={handleInputChange} />
+
               {/* Tabs */}
               <div className="flex border-b border-border">
                 {[
