@@ -12,6 +12,11 @@ export default function TakeoffCard({ takeoff, type, onUpdate, onDelete }) {
   const [data, setData] = useState(takeoff);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("labor");
+  const [materialPrices, setMaterialPrices] = useState([]);
+
+  useEffect(() => {
+    base44.entities.MaterialPrice.list().then(setMaterialPrices).catch(() => {});
+  }, []);
 
   const recalcTotals = (d) => {
     const totalLabor = (d.labor_items || []).reduce((s, item) => s + (item.total || 0), 0);
