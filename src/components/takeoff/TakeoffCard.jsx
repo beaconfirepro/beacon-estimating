@@ -6,6 +6,7 @@ import { ChevronDown, ChevronUp, Trash2, Save, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import SprinklerInputForm from "./SprinklerInputForm";
+import SprinklerCriteriaSelectors from "./SprinklerCriteriaSelectors";
 import { calculateSprinklerTakeoff, DEFAULT_SPRINKLER_INPUTS } from "@/lib/sprinklerFormulas";
 
 export default function TakeoffCard({ takeoff, type, onUpdate, onDelete }) {
