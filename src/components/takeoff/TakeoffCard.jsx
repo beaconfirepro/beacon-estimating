@@ -215,7 +215,7 @@ export default function TakeoffCard({ takeoff, type, onUpdate, onDelete }) {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                     <Eye className="w-3 h-3" />
-                    Prices pulled from master inventory. Save to persist.
+                    Prices pulled from master inventory.
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
