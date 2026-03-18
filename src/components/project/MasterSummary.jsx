@@ -52,14 +52,24 @@ export default function MasterSummary({ project, sprinklerTakeoffs, standpipeTak
 
   // Recalculate material for a takeoff using the selected vendor prices
   const calcMaterial = (takeoff) => {
+    // On default, just use the saved total — no recalculation needed
+    if (selectedVendor === "__default__") {
+      return { total: takeoff.total_material || 0, hasFallback: false };
+    }
     const items = takeoff.material_items || [];
     if (items.length === 0) return { total: takeoff.total_material || 0, hasFallback: false };
     let total = 0;
     let hasFallback = false;
     items.forEach(item => {
-      const price = priceMap[item.item] ?? item.price ?? 0;
-      if (selectedVendor !== "__default__" && fallbackSet.has(item.item)) hasFallback = true;
-      total += price * (item.quantity || 0);
+      if (priceMap[item.item] !== undefined) {
+        total += priceMap[item.item] * (item.quantity || 0);
+      } else if (fallbackSet.has(item.item)) {
+        // Use saved unit price as fallback
+        total += (item.price || 0) * (item.quantity || 0);
+        hasFallback = true;
+      } else {
+        total += (item.price || 0) * (item.quantity || 0);
+      }
     });
     return { total, hasFallback };
   };
