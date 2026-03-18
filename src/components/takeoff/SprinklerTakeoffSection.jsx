@@ -5,7 +5,7 @@ import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import TakeoffCard from "./TakeoffCard";
 import { toast } from "sonner";
-import { DEFAULT_SPRINKLER_LABOR_ITEMS, DEFAULT_SPRINKLER_MATERIAL_ITEMS } from "@/lib/defaultItems";
+import { DEFAULT_SPRINKLER_INPUTS } from "@/lib/sprinklerFormulas";
 
 export default function SprinklerTakeoffSection({ projectId, takeoffs, onUpdate }) {
   const [creating, setCreating] = useState(false);
