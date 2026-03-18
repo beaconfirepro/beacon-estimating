@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChevronDown, ChevronUp, Trash2, Save, Plus, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import MaterialItemRow from "./MaterialItemRow";
 
 export default function TakeoffCard({ takeoff, type, onUpdate, onDelete }) {
   const [expanded, setExpanded] = useState(true);
