@@ -111,7 +111,7 @@ export default function SprinklerInputForm({ inputs, onChange }) {
         </SubSection>
       </Section>
 
-      <Section title="Welded Fittings (4\" – 6\")">
+      <Section title='Welded Fittings (4" - 6")'>
         <SubSection title="Elbows">
           <Row label='Elbow 4" Welded' field="wld_elbow_4in" inputs={inputs} onChange={onChange} />
           <Row label='Elbow 6" Welded' field="wld_elbow_6in" inputs={inputs} onChange={onChange} />
