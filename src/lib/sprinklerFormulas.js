@@ -106,12 +106,35 @@ export function calculateSprinklerTakeoff(inputs, materialPriceMap = {}) {
     vertical_riser_lf = 0,
     hoisting_floors = 0,
 
+    // ── Criteria selectors ──
+    labor_class = 1,
+    hoisting_type = "none",
+    project_size = "medium",
+    system_type = "wet",
+    seismic_mains = "no",
+    seismic_lines = "no",
+
     // ── Rates ──
     labor_rate = 85,
     total_design = 0,
   } = inputs;
 
   const totalHeads = heads_concealed + heads_pendant + heads_upright + heads_sidewall;
+
+  // Build composite multipliers from criteria
+  const classM   = LABOR_CLASS_MULTIPLIER[labor_class]   ?? 1.00;
+  const sizeM    = PROJECT_SIZE_MULTIPLIER[project_size]  ?? 1.00;
+  const sysM     = SYSTEM_TYPE_MULTIPLIER[system_type]    ?? 1.00;
+  const hoistAdd = HOISTING_ADDER[hoisting_type]          ?? 0;
+  const seisMain = seismic_mains === "yes" ? SEISMIC_MAINS_ADDER : 0;
+  const seisLine = seismic_lines === "yes" ? SEISMIC_LINES_ADDER : 0;
+
+  // Overall multiplier for most items
+  const M = classM * sizeM * sysM;
+
+  // Factor helpers
+  const lf = (base, seisAdder = 0) => (base + seisAdder + hoistAdd) * M;
+  const ea = (base) => base * M;
   const totalHandlers = hangers_1in_2in + hangers_2_5in_4in;
 
   // Aggregate fitting totals for labor
