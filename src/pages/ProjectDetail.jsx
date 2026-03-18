@@ -8,6 +8,7 @@ import ProjectInfoForm from "@/components/project/ProjectInfoForm";
 import SprinklerTakeoffSection from "@/components/takeoff/SprinklerTakeoffSection";
 import StandpipeSection from "@/components/takeoff/StandpipeSection";
 import MasterSummary from "@/components/project/MasterSummary";
+import HeadLayout from "@/components/project/HeadLayout";
 import { toast } from "sonner";
 import { generatePDF } from "@/lib/pdfExport";
 
