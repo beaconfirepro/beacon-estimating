@@ -259,44 +259,15 @@ export default function TakeoffCard({ takeoff, type, onUpdate, onDelete }) {
                       </thead>
                       <tbody className="divide-y divide-border/50">
                         {(data.material_items || []).map((item, idx) => (
-                          <tr key={idx} className="hover:bg-muted/20">
-                            <td className="py-1.5 pr-3">
-                              <Input
-                                value={item.item || ""}
-                                onChange={(e) => updateMaterialItem(idx, "item", e.target.value)}
-                                className="h-7 text-xs"
-                              />
-                            </td>
-                            <td className="py-1.5 px-2">
-                              <Input
-                                type="number"
-                                value={item.quantity || ""}
-                                onChange={(e) => updateMaterialItem(idx, "quantity", e.target.value)}
-                                className="h-7 text-xs text-right w-24"
-                              />
-                            </td>
-                            <td className="py-1.5 px-2">
-                              <Input
-                                type="number"
-                                value={item.price || ""}
-                                onChange={(e) => updateMaterialItem(idx, "price", e.target.value)}
-                                className="h-7 text-xs text-right w-28"
-                              />
-                            </td>
-                            <td className="py-1.5 px-2 text-right font-medium text-foreground whitespace-nowrap">
-                              ${fmt(item.total)}
-                            </td>
-                            <td className="py-1.5">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                                onClick={() => removeMaterialItem(idx)}
-                              >
-                                <X className="w-3 h-3" />
-                              </Button>
-                            </td>
-                          </tr>
+                          <MaterialItemRow
+                            key={idx}
+                            item={item}
+                            idx={idx}
+                            materialPrices={materialPrices}
+                            onUpdate={updateMaterialItem}
+                            onRemove={removeMaterialItem}
+                            fmt={fmt}
+                          />
                         ))}
                       </tbody>
                     </table>
