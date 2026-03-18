@@ -126,6 +126,7 @@ export default function ProjectDetail() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6 bg-muted">
             <TabsTrigger value="info">Project Info</TabsTrigger>
+            <TabsTrigger value="headlayout" disabled={isNew}>Head Layout</TabsTrigger>
             <TabsTrigger value="sprinkler" disabled={isNew}>Fire Sprinkler</TabsTrigger>
             <TabsTrigger value="standpipe" disabled={isNew}>Standpipe / Bulk</TabsTrigger>
             <TabsTrigger value="summary" disabled={isNew}>Summary</TabsTrigger>
