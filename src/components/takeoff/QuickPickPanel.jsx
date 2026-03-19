@@ -20,7 +20,7 @@ const ALL_CATEGORIES = [
  * the same shape that the hardcoded QUICK_PICK_ASSEMBLIES use.
  */
 function dbAssemblyToQuickPick(asm) {
-  const defaultBasis = asm.default_basis || "";
+  const basis = asm.default_basis || "";
   return {
     id: asm.id,
     name: asm.name,
@@ -29,9 +29,9 @@ function dbAssemblyToQuickPick(asm) {
     unit: asm.quick_pick_unit || "ea",
     _isCustom: true,
     components: (asm.components || [])
-      .filter(c => c.generic_part_name && (c.formula_field || defaultBasis))
+      .filter(c => c.generic_part_name && basis)
       .map(c => ({
-        field: c.formula_field || defaultBasis,
+        field: basis,
         label: c.generic_part_name,
         quantity: c.quantity || 1,
         unit: "ea",
