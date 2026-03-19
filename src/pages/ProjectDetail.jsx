@@ -9,6 +9,7 @@ import SprinklerTakeoffSection from "@/components/takeoff/SprinklerTakeoffSectio
 import StandpipeSection from "@/components/takeoff/StandpipeSection";
 import MasterSummary from "@/components/project/MasterSummary";
 import HeadLayout from "@/components/project/HeadLayout";
+import HeadLayoutUpload from "@/components/project/HeadLayoutUpload";
 import { toast } from "sonner";
 import { generatePDF } from "@/lib/pdfExport";
 
