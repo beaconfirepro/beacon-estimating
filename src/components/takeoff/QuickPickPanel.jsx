@@ -9,29 +9,38 @@ const fmt = (n) => `$${(n || 0).toLocaleString("en-US", { minimumFractionDigits:
 
 function AssemblyCard({ assembly, priceMap, onApply }) {
   const [qty, setQty] = useState(1);
+  const [justAdded, setJustAdded] = useState(false);
 
-  // Compute live cost preview from price map
-  const cost = assembly.components.reduce((sum, comp) => {
-    const partLabel = comp.label;
-    const price = priceMap[comp.label] || priceMap[comp.field] || 0;
-    return sum + price * comp.quantity * qty;
-  }, 0);
+  const handleAdd = () => {
+    onApply(assembly, qty);
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 2000);
+  };
 
   return (
-    <div className="bg-muted/30 border border-border rounded-lg p-3 flex flex-col gap-2">
+    <div className={`border rounded-lg p-3 flex flex-col gap-2 transition-all duration-300 ${
+      justAdded
+        ? "bg-green-50 border-green-400 shadow-md shadow-green-100"
+        : "bg-muted/30 border-border"
+    }`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="text-xs font-semibold text-foreground truncate">{assembly.name}</div>
           <div className="text-xs text-muted-foreground mt-0.5 leading-tight">{assembly.description}</div>
         </div>
+        {justAdded && (
+          <div className="flex items-center gap-1 text-green-600 text-xs font-semibold flex-shrink-0">
+            <CheckCircle2 className="w-3.5 h-3.5" /> Added!
+          </div>
+        )}
       </div>
 
       {/* Components preview */}
       <div className="space-y-0.5">
         {assembly.components.map((comp, i) => (
-          <div key={i} className="flex items-center justify-between text-xs text-muted-foreground">
+          <div key={i} className={`flex items-center justify-between text-xs transition-colors ${justAdded ? "text-green-700" : "text-muted-foreground"}`}>
             <span className="truncate">{comp.quantity * qty} × {comp.label}</span>
-            <span className="ml-2 text-xs text-foreground/60">{comp.unit}</span>
+            <span className="ml-2 text-xs opacity-70">{comp.unit}</span>
           </div>
         ))}
       </div>
@@ -50,10 +59,14 @@ function AssemblyCard({ assembly, priceMap, onApply }) {
         </div>
         <Button
           size="sm"
-          onClick={() => onApply(assembly, qty)}
-          className="h-6 text-xs px-2 ml-auto bg-accent hover:bg-accent/90 text-accent-foreground gap-1"
+          onClick={handleAdd}
+          className={`h-6 text-xs px-2 ml-auto gap-1 transition-all ${
+            justAdded
+              ? "bg-green-600 hover:bg-green-700 text-white"
+              : "bg-accent hover:bg-accent/90 text-accent-foreground"
+          }`}
         >
-          <Plus className="w-3 h-3" /> Add
+          {justAdded ? <><CheckCircle2 className="w-3 h-3" /> Added</> : <><Plus className="w-3 h-3" /> Add</>}
         </Button>
       </div>
     </div>
