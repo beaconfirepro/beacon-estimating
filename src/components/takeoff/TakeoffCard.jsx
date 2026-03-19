@@ -147,6 +147,7 @@ export default function TakeoffCard({ takeoff, type, onUpdate, onDelete }) {
               {/* Tabs */}
               <div className="flex border-b border-border">
                 {[
+                  { key: "quickpick", label: "⚡ Quick Pick" },
                   { key: "inputs", label: "Takeoff Inputs" },
                   { key: "labor", label: `Labor (${result.labor_items.length})` },
                   { key: "material", label: `Material (${result.material_items.length})` },
