@@ -444,10 +444,18 @@ function AssemblyCard({ assembly, allPartNames, priceMap, activeIds, onSave, onD
                     <Input value={draft.quick_pick_unit || ""} onChange={e => setDraft(p => ({ ...p, quick_pick_unit: e.target.value }))}
                       className="mt-1 h-8 text-xs" placeholder="e.g. head, riser, 10 LF" />
                   </div>
+                  {draft.quick_pick_category && (
+                    <div className="col-span-2">
+                      <label className="text-xs text-muted-foreground font-medium">Basis <span className="font-normal">(applied to all components)</span></label>
+                      <select value={draft.default_basis || ""} onChange={e => setDraft(p => ({ ...p, default_basis: e.target.value }))}
+                        className="mt-1 h-8 text-xs w-full border border-input rounded-md px-2 bg-transparent">
+                        <option value="">— select basis —</option>
+                        {FORMULA_FIELDS.map(f => <option key={f.field} value={f.field}>{f.label}</option>)}
+                      </select>
+                      <p className="text-xs text-muted-foreground mt-1">Individual components can override this below.</p>
+                    </div>
+                  )}
                 </div>
-                {draft.quick_pick_category && (
-                  <p className="text-xs text-muted-foreground">Set the <strong>Basis</strong> for each component below so quantities flow into the takeoff engine.</p>
-                )}
               </div>
 
               {/* Component list */}
@@ -461,7 +469,7 @@ function AssemblyCard({ assembly, allPartNames, priceMap, activeIds, onSave, onD
                 <div className="flex items-center gap-2 mb-1 text-xs text-muted-foreground font-medium">
                   <span className="flex-1">Part</span>
                   <span className="w-20 text-right">Qty</span>
-                  {isQuickPick && <span className="w-44">Basis</span>}
+                  {isQuickPick && <span className="">Basis Override</span>}
                   <span className="w-28">Notes</span>
                   <span className="w-4"></span>
                 </div>
