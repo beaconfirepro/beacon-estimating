@@ -546,6 +546,28 @@ function NewAssemblyForm({ allPartNames, onSave, onCancel }) {
         </div>
       </div>
 
+      {/* Quick Pick settings */}
+      <div className="border border-accent/30 rounded-lg p-3 bg-accent/5 space-y-2">
+        <div className="text-xs font-semibold text-accent uppercase tracking-wide">⚡ Quick Pick Settings</div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs text-muted-foreground font-medium">Quick Pick Category</label>
+            <select value={data.quick_pick_category} onChange={e => setData(p => ({ ...p, quick_pick_category: e.target.value }))}
+              className="mt-1 h-8 text-xs w-full border border-input rounded-md px-2 bg-transparent">
+              {QP_CATEGORIES.map(c => <option key={c} value={c}>{c || "— Not a Quick Pick —"}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground font-medium">Unit Label</label>
+            <Input value={data.quick_pick_unit} onChange={e => setData(p => ({ ...p, quick_pick_unit: e.target.value }))}
+              className="mt-1 h-8 text-xs" placeholder="e.g. head, riser, 10 LF" />
+          </div>
+        </div>
+        {isQuickPick && (
+          <p className="text-xs text-muted-foreground">Set the <strong>Formula Field</strong> for each component so quantities flow into the takeoff engine.</p>
+        )}
+      </div>
+
       <div>
         <div className="flex items-center justify-between mb-2">
           <label className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">Components</label>
@@ -553,10 +575,18 @@ function NewAssemblyForm({ allPartNames, onSave, onCancel }) {
             <Plus className="w-3 h-3" /> Add Part
           </Button>
         </div>
+        <div className="flex items-center gap-2 mb-1 text-xs text-muted-foreground font-medium">
+          <span className="flex-1">Part</span>
+          <span className="w-20 text-right">Qty</span>
+          {isQuickPick && <span className="w-44">Formula Field</span>}
+          <span className="w-28">Notes</span>
+          <span className="w-4"></span>
+        </div>
         {data.components.length === 0
           ? <p className="text-xs text-muted-foreground italic">Add parts to this assembly.</p>
           : data.components.map((comp, idx) => (
             <AssemblyComponentRow key={idx} comp={comp} allPartNames={allPartNames}
+              isQuickPick={isQuickPick}
               onChange={(c) => updateComponent(idx, c)} onRemove={() => removeComponent(idx)} />
           ))}
       </div>
