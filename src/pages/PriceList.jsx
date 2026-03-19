@@ -508,9 +508,10 @@ function AssemblyCard({ assembly, allPartNames, priceMap, activeIds, onSave, onD
 }
 
 function NewAssemblyForm({ allPartNames, onSave, onCancel }) {
-  const [data, setData] = useState({ name: "", description: "", category: "misc", labor_hours: "", components: [] });
+  const [data, setData] = useState({ name: "", description: "", category: "misc", labor_hours: "", quick_pick_category: "", quick_pick_unit: "", components: [] });
 
-  const addComponent = () => setData(p => ({ ...p, components: [...p.components, { generic_part_name: "", quantity: 1, notes: "" }] }));
+  const isQuickPick = !!data.quick_pick_category;
+  const addComponent = () => setData(p => ({ ...p, components: [...p.components, { generic_part_name: "", quantity: 1, formula_field: "", notes: "" }] }));
   const updateComponent = (idx, comp) => setData(p => { const c = [...p.components]; c[idx] = comp; return { ...p, components: c }; });
   const removeComponent = (idx) => setData(p => ({ ...p, components: p.components.filter((_, i) => i !== idx) }));
 
