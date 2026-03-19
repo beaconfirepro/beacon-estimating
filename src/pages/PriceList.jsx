@@ -772,16 +772,18 @@ export default function PriceList() {
         <div className="flex flex-wrap gap-3 items-center">
           <Input placeholder={tab === "parts" ? "Search parts..." : "Search assemblies..."} value={search}
             onChange={e => setSearch(e.target.value)} className="h-8 text-sm w-56" />
-          <div className="flex gap-1 flex-wrap">
-            {["all", ...CATEGORIES].map(cat => (
-              <button key={cat} onClick={() => setFilterCat(cat)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors capitalize ${
-                  filterCat === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-secondary"
-                }`}>
-                {cat}
-              </button>
-            ))}
-          </div>
+          {tab === "parts" && (
+            <div className="flex gap-1 flex-wrap">
+              {["all", ...CATEGORIES].map(cat => (
+                <button key={cat} onClick={() => setFilterCat(cat)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors capitalize ${
+                    filterCat === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-secondary"
+                  }`}>
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
           <span className="text-xs text-muted-foreground ml-auto">
             {tab === "parts" ? `${filteredPartKeys.length} parts` : `${filteredAssemblies.length} assemblies`}
           </span>
