@@ -564,7 +564,7 @@ function NewAssemblyForm({ allPartNames, onSave, onCancel }) {
           </div>
         </div>
         {isQuickPick && (
-          <p className="text-xs text-muted-foreground">Set the <strong>Formula Field</strong> for each component so quantities flow into the takeoff engine.</p>
+        <p className="text-xs text-muted-foreground">Set the <strong>Basis</strong> for each component so quantities flow into the takeoff engine.</p>
         )}
       </div>
 
