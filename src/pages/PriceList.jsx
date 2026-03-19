@@ -292,7 +292,7 @@ function AssemblyComponentRow({ comp, allPartNames, onChange, onRemove, isQuickP
             onChange={e => onChange({ ...comp, formula_field: e.target.value })}
             className="w-full h-7 text-xs border border-input rounded-md px-2 bg-transparent"
           >
-            <option value="">— formula field —</option>
+            <option value="">— basis —</option>
             {FORMULA_FIELDS.map(f => <option key={f.field} value={f.field}>{f.label}</option>)}
           </select>
         </div>
