@@ -1,26 +1,103 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Download, Store } from "lucide-react";
+import { Download, Store, ChevronDown, ChevronUp, SlidersHorizontal } from "lucide-react";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const pctFmt = (n) => `${(n || 0).toFixed(1)}%`;
+
+function MarginSlider({ label, value, onChange, color }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-2 h-2 rounded-full ${color} flex-shrink-0`} />
+      <span className="text-xs text-muted-foreground w-16">{label}</span>
+      <input
+        type="range"
+        min={0}
+        max={60}
+        step={0.5}
+        value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+        className="flex-1 accent-primary h-1.5"
+      />
+      <span className="text-xs font-semibold text-foreground w-10 text-right">{value.toFixed(1)}%</span>
+    </div>
+  );
+}
+
+function FallbackAccordion({ fallbackItems, vendorName }) {
+  const [open, setOpen] = useState(false);
+  if (!fallbackItems || fallbackItems.length === 0) return null;
+
+  return (
+    <div className="border border-destructive/30 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-2.5 bg-destructive/5 hover:bg-destructive/10 transition-colors text-left"
+      >
+        <span className="text-xs font-medium text-destructive">
+          ⚠ {fallbackItems.length} item{fallbackItems.length !== 1 ? "s" : ""} using default price (no {vendorName} price available)
+        </span>
+        {open ? <ChevronUp className="w-3.5 h-3.5 text-destructive" /> : <ChevronDown className="w-3.5 h-3.5 text-destructive" />}
+      </button>
+      {open && (
+        <div className="divide-y divide-border">
+          {fallbackItems.map((fi, i) => (
+            <div key={i} className="px-4 py-2 flex items-center justify-between bg-destructive/3">
+              <span className="text-xs text-foreground">{fi.item}</span>
+              <div className="text-right">
+                <span className="text-xs text-muted-foreground">Fallback price: </span>
+                <span className="text-xs font-semibold text-destructive">{fmt(fi.price)}/ea</span>
+                <span className="text-xs text-muted-foreground ml-2">× {fi.quantity} = </span>
+                <span className="text-xs font-semibold text-destructive">{fmt(fi.price * fi.quantity)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function MasterSummary({ project, sprinklerTakeoffs, standpipeTakeoffs, onExport }) {
   const [allPrices, setAllPrices] = useState([]);
   const [selectedVendor, setSelectedVendor] = useState("__default__");
 
+  // Margin state
+  const [overallMargin, setOverallMargin] = useState(15);
+  const [expandMargins, setExpandMargins] = useState(false);
+  const [laborMargin, setLaborMargin] = useState(15);
+  const [materialMargin, setMaterialMargin] = useState(15);
+  const [designMargin, setDesignMargin] = useState(15);
+
+  // Sync individual sliders when overall changes (only if not expanded)
+  const handleOverallChange = (v) => {
+    setOverallMargin(v);
+    if (!expandMargins) {
+      setLaborMargin(v);
+      setMaterialMargin(v);
+      setDesignMargin(v);
+    }
+  };
+
+  const handleExpandToggle = () => {
+    if (!expandMargins) {
+      // Expanding — seed individual sliders from overall
+      setLaborMargin(overallMargin);
+      setMaterialMargin(overallMargin);
+      setDesignMargin(overallMargin);
+    }
+    setExpandMargins(!expandMargins);
+  };
+
   useEffect(() => {
     base44.entities.MaterialPrice.list("-updated_date", 500).then(data => setAllPrices(data || []));
   }, []);
 
-  // Build list of distinct vendors
   const vendors = Array.from(
     new Set(allPrices.map(p => p.supplier_name).filter(Boolean))
   ).sort();
 
-  // Build price map for the selected vendor.
-  // For each generic_part_name: use selected vendor's price if available, else fall back to first record (default).
-  // Also track which items had to fall back.
   const buildPriceMap = (vendor) => {
     const byPart = allPrices.reduce((acc, p) => {
       if (!acc[p.generic_part_name]) acc[p.generic_part_name] = [];
@@ -50,28 +127,29 @@ export default function MasterSummary({ project, sprinklerTakeoffs, standpipeTak
 
   const { priceMap, fallbackSet } = buildPriceMap(selectedVendor);
 
-  // Recalculate material for a takeoff using the selected vendor prices
   const calcMaterial = (takeoff) => {
-    // On default, just use the saved total — no recalculation needed
     if (selectedVendor === "__default__") {
-      return { total: takeoff.total_material || 0, hasFallback: false };
+      return { total: takeoff.total_material || 0, hasFallback: false, fallbackItems: [] };
     }
     const items = takeoff.material_items || [];
-    if (items.length === 0) return { total: takeoff.total_material || 0, hasFallback: false };
+    if (items.length === 0) return { total: takeoff.total_material || 0, hasFallback: false, fallbackItems: [] };
     let total = 0;
     let hasFallback = false;
+    const fallbackItems = [];
     items.forEach(item => {
-      if (priceMap[item.item] !== undefined) {
+      if (priceMap[item.item] !== undefined && !fallbackSet.has(item.item)) {
         total += priceMap[item.item] * (item.quantity || 0);
-      } else if (fallbackSet.has(item.item)) {
-        // Use saved unit price as fallback
-        total += (item.price || 0) * (item.quantity || 0);
-        hasFallback = true;
       } else {
-        total += (item.price || 0) * (item.quantity || 0);
+        // Fallback to saved unit price
+        const usedPrice = item.price || 0;
+        total += usedPrice * (item.quantity || 0);
+        if (fallbackSet.has(item.item)) {
+          hasFallback = true;
+          fallbackItems.push({ item: item.item, price: usedPrice, quantity: item.quantity || 0 });
+        }
       }
     });
-    return { total, hasFallback };
+    return { total, hasFallback, fallbackItems };
   };
 
   const allTakeoffs = [
@@ -79,12 +157,36 @@ export default function MasterSummary({ project, sprinklerTakeoffs, standpipeTak
     ...standpipeTakeoffs.map(t => ({ ...t, _category: t.type === "vertical" ? "Vertical Standpipe" : "Horizontal Bulk" }))
   ];
 
-  const grandLabor = allTakeoffs.reduce((s, t) => s + (t.total_labor || 0), 0);
-  const grandDesign = allTakeoffs.reduce((s, t) => s + (t.total_design || 0), 0);
-  const grandMaterial = allTakeoffs.reduce((s, t) => s + calcMaterial(t).total, 0);
-  const grandTotal = grandLabor + grandMaterial + grandDesign;
+  const grandLaborCost = allTakeoffs.reduce((s, t) => s + (t.total_labor || 0), 0);
+  const grandDesignCost = allTakeoffs.reduce((s, t) => s + (t.total_design || 0), 0);
+  const grandMaterialCost = allTakeoffs.reduce((s, t) => s + calcMaterial(t).total, 0);
+  const grandCost = grandLaborCost + grandMaterialCost + grandDesignCost;
+
+  const markup = (cost, margin) => cost / (1 - margin / 100);
+  const grandLaborSell = markup(grandLaborCost, expandMargins ? laborMargin : overallMargin);
+  const grandMaterialSell = markup(grandMaterialCost, expandMargins ? materialMargin : overallMargin);
+  const grandDesignSell = markup(grandDesignCost, expandMargins ? designMargin : overallMargin);
+  const grandSell = grandLaborSell + grandMaterialSell + grandDesignSell;
 
   const usingVendor = selectedVendor !== "__default__";
+
+  // Aggregate fallback items across all takeoffs for the accordion
+  const allFallbackItems = [];
+  const fallbackSeen = new Set();
+  allTakeoffs.forEach(t => {
+    const { fallbackItems } = calcMaterial(t);
+    fallbackItems.forEach(fi => {
+      const key = fi.item;
+      if (!fallbackSeen.has(key)) {
+        fallbackSeen.add(key);
+        allFallbackItems.push(fi);
+      } else {
+        // Merge quantities
+        const existing = allFallbackItems.find(x => x.item === fi.item);
+        if (existing) existing.quantity += fi.quantity;
+      }
+    });
+  });
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -101,43 +203,79 @@ export default function MasterSummary({ project, sprinklerTakeoffs, standpipeTak
 
       {/* Vendor Toggle */}
       {vendors.length > 0 && (
-        <div className="bg-card border border-border rounded-xl p-4 flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-            <Store className="w-4 h-4 text-muted-foreground" />
-            Vendor Comparison:
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              onClick={() => setSelectedVendor("__default__")}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                selectedVendor === "__default__"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-secondary"
-              }`}
-            >
-              Default (Active)
-            </button>
-            {vendors.map(v => (
+        <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <Store className="w-4 h-4 text-muted-foreground" />
+              Vendor Comparison:
+            </div>
+            <div className="flex flex-wrap gap-1.5">
               <button
-                key={v}
-                onClick={() => setSelectedVendor(v)}
+                onClick={() => setSelectedVendor("__default__")}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  selectedVendor === v
+                  selectedVendor === "__default__"
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:bg-secondary"
                 }`}
               >
-                {v}
+                Default (Active)
               </button>
-            ))}
+              {vendors.map(v => (
+                <button
+                  key={v}
+                  onClick={() => setSelectedVendor(v)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                    selectedVendor === v
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-secondary"
+                  }`}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
           </div>
-          {usingVendor && fallbackSet.size > 0 && (
-            <span className="text-xs text-destructive ml-auto">
-              ⚠ {fallbackSet.size} item{fallbackSet.size !== 1 ? "s" : ""} using default price (no {selectedVendor} price)
-            </span>
+
+          {/* Fallback accordion */}
+          {usingVendor && allFallbackItems.length > 0 && (
+            <FallbackAccordion fallbackItems={allFallbackItems} vendorName={selectedVendor} />
           )}
         </div>
       )}
+
+      {/* Profit Margin Slider */}
+      <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+            <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
+            Profit Margin
+          </div>
+          <button
+            onClick={handleExpandToggle}
+            className="text-xs text-primary hover:underline flex items-center gap-1"
+          >
+            {expandMargins ? "Use single margin" : "Control by category"}
+            {expandMargins ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
+        </div>
+
+        {!expandMargins ? (
+          <MarginSlider label="All" value={overallMargin} onChange={handleOverallChange} color="bg-primary" />
+        ) : (
+          <div className="space-y-2 pt-1">
+            <MarginSlider label="Labor" value={laborMargin} onChange={setLaborMargin} color="bg-blue-500" />
+            <MarginSlider label="Material" value={materialMargin} onChange={setMaterialMargin} color="bg-green-500" />
+            <MarginSlider label="Design" value={designMargin} onChange={setDesignMargin} color="bg-orange-500" />
+          </div>
+        )}
+
+        <div className="flex items-center justify-between pt-1 border-t border-border text-xs text-muted-foreground">
+          <span>Cost → Sell price (margin on sell)</span>
+          <span className="font-semibold text-foreground text-sm">
+            {fmt(grandCost)} → {fmt(grandSell)}
+          </span>
+        </div>
+      </div>
 
       {/* Project Info */}
       <div className="bg-card border border-border rounded-xl p-5">
@@ -179,7 +317,7 @@ export default function MasterSummary({ project, sprinklerTakeoffs, standpipeTak
                 <th className="text-right px-5 py-3 font-semibold text-muted-foreground">Labor</th>
                 <th className="text-right px-5 py-3 font-semibold text-muted-foreground">Material</th>
                 <th className="text-right px-5 py-3 font-semibold text-muted-foreground">Design</th>
-                <th className="text-right px-5 py-3 font-semibold text-muted-foreground">Total</th>
+                <th className="text-right px-5 py-3 font-semibold text-muted-foreground">Sell Total</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -188,54 +326,56 @@ export default function MasterSummary({ project, sprinklerTakeoffs, standpipeTak
                   <td colSpan={6} className="text-center py-8 text-muted-foreground">No takeoff sections added yet</td>
                 </tr>
               ) : allTakeoffs.map((t, i) => {
-                const { total: matTotal, hasFallback } = calcMaterial(t);
-                const rowTotal = (t.total_labor || 0) + matTotal + (t.total_design || 0);
+                const { total: matCost, hasFallback } = calcMaterial(t);
+                const lm = expandMargins ? laborMargin : overallMargin;
+                const mm = expandMargins ? materialMargin : overallMargin;
+                const dm = expandMargins ? designMargin : overallMargin;
+                const laborSell = markup(t.total_labor || 0, lm);
+                const matSell = markup(matCost, mm);
+                const desSell = markup(t.total_design || 0, dm);
+                const rowSell = laborSell + matSell + desSell;
                 return (
                   <tr key={i} className="hover:bg-muted/30">
                     <td className="px-5 py-3 font-medium text-foreground">{t._category}</td>
                     <td className="px-5 py-3 text-muted-foreground">{t.area_name || `Section ${t.section_number}`}</td>
-                    <td className="px-5 py-3 text-right">{fmt(t.total_labor)}</td>
+                    <td className="px-5 py-3 text-right">{fmt(laborSell)}</td>
                     <td className={`px-5 py-3 text-right font-medium ${hasFallback ? "text-destructive" : ""}`}>
-                      {fmt(matTotal)}
+                      {fmt(matSell)}
                       {hasFallback && <span className="ml-1 text-xs">*</span>}
                     </td>
-                    <td className="px-5 py-3 text-right">{fmt(t.total_design)}</td>
-                    <td className="px-5 py-3 text-right font-semibold">{fmt(rowTotal)}</td>
+                    <td className="px-5 py-3 text-right">{fmt(desSell)}</td>
+                    <td className="px-5 py-3 text-right font-semibold">{fmt(rowSell)}</td>
                   </tr>
                 );
               })}
             </tbody>
             <tfoot>
               <tr className="bg-primary text-primary-foreground font-bold">
-                <td colSpan={2} className="px-5 py-3">GRAND TOTAL</td>
-                <td className="px-5 py-3 text-right">{fmt(grandLabor)}</td>
-                <td className="px-5 py-3 text-right">{fmt(grandMaterial)}</td>
-                <td className="px-5 py-3 text-right">{fmt(grandDesign)}</td>
-                <td className="px-5 py-3 text-right text-accent text-base">{fmt(grandTotal)}</td>
+                <td colSpan={2} className="px-5 py-3">GRAND TOTAL (Sell)</td>
+                <td className="px-5 py-3 text-right">{fmt(grandLaborSell)}</td>
+                <td className="px-5 py-3 text-right">{fmt(grandMaterialSell)}</td>
+                <td className="px-5 py-3 text-right">{fmt(grandDesignSell)}</td>
+                <td className="px-5 py-3 text-right text-accent text-base">{fmt(grandSell)}</td>
               </tr>
             </tfoot>
           </table>
         </div>
-        {usingVendor && fallbackSet.size > 0 && (
-          <div className="px-5 py-2 border-t border-border bg-destructive/5 text-xs text-destructive">
-            * Material shown in red used default pricing — no {selectedVendor} price found for: {Array.from(fallbackSet).join(", ")}
-          </div>
-        )}
       </div>
 
-      {/* Cost Breakdown */}
-      {grandTotal > 0 && (
+      {/* Cost Breakdown Cards */}
+      {grandCost > 0 && (
         <div className="grid grid-cols-3 gap-4">
           {[
-            { label: "Labor",    value: grandLabor,    pct: (grandLabor    / grandTotal * 100).toFixed(1), color: "bg-blue-500" },
-            { label: "Material", value: grandMaterial, pct: (grandMaterial / grandTotal * 100).toFixed(1), color: "bg-green-500" },
-            { label: "Design",   value: grandDesign,   pct: (grandDesign   / grandTotal * 100).toFixed(1), color: "bg-orange-500" },
-          ].map(({ label, value, pct, color }) => (
+            { label: "Labor",    cost: grandLaborCost,    sell: grandLaborSell,    color: "bg-blue-500",   margin: expandMargins ? laborMargin   : overallMargin },
+            { label: "Material", cost: grandMaterialCost, sell: grandMaterialSell, color: "bg-green-500",  margin: expandMargins ? materialMargin : overallMargin },
+            { label: "Design",   cost: grandDesignCost,   sell: grandDesignSell,   color: "bg-orange-500", margin: expandMargins ? designMargin   : overallMargin },
+          ].map(({ label, cost, sell, color, margin }) => (
             <div key={label} className="bg-card border border-border rounded-xl p-4 text-center">
               <div className={`w-3 h-3 rounded-full ${color} mx-auto mb-2`} />
               <div className="text-xs text-muted-foreground uppercase tracking-wider">{label}</div>
-              <div className="text-xl font-bold text-foreground mt-1">{fmt(value)}</div>
-              <div className="text-sm text-muted-foreground">{pct}% of total</div>
+              <div className="text-lg font-bold text-foreground mt-1">{fmt(sell)}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">Cost: {fmt(cost)}</div>
+              <div className="text-xs text-muted-foreground">{pctFmt(margin)} margin</div>
             </div>
           ))}
         </div>
