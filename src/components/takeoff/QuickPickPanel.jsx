@@ -1,11 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, ChevronDown, ChevronUp, Zap, CheckCircle2 } from "lucide-react";
 import { QUICK_PICK_ASSEMBLIES, QUICK_PICK_CATEGORIES } from "@/lib/quickPickAssemblies";
 import { toast } from "sonner";
 
-const fmt = (n) => `$${(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const ALL_CATEGORIES = [
+  "Quick Pick: Heads",
+  "Quick Pick: Risers",
+  "Quick Pick: Mains",
+  "Quick Pick: Branchline (Threaded)",
+  "Quick Pick: Branchline (Grooved)",
+  "Quick Pick: Valves & Trim",
+];
+
+/**
+ * Convert a DB Assembly record (with formula_field on components) into
+ * the same shape that the hardcoded QUICK_PICK_ASSEMBLIES use.
+ */
+function dbAssemblyToQuickPick(asm) {
+  return {
+    id: asm.id,
+    name: asm.name,
+    category: asm.quick_pick_category,
+    description: asm.description || "",
+    unit: asm.quick_pick_unit || "ea",
+    _isCustom: true,
+    components: (asm.components || [])
+      .filter(c => c.formula_field && c.generic_part_name)
+      .map(c => ({
+        field: c.formula_field,
+        label: c.generic_part_name,
+        quantity: c.quantity || 1,
+        unit: "ea",
+      })),
+  };
+}
 
 function AssemblyCard({ assembly, priceMap, onApply }) {
   const [qty, setQty] = useState(1);
@@ -21,11 +52,18 @@ function AssemblyCard({ assembly, priceMap, onApply }) {
     <div className={`border rounded-lg p-3 flex flex-col gap-2 transition-all duration-300 ${
       justAdded
         ? "bg-green-50 border-green-400 shadow-md shadow-green-100"
-        : "bg-muted/30 border-border"
+        : assembly._isCustom
+          ? "bg-accent/5 border-accent/30"
+          : "bg-muted/30 border-border"
     }`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <div className="text-xs font-semibold text-foreground truncate">{assembly.name}</div>
+          <div className="flex items-center gap-1.5">
+            <div className="text-xs font-semibold text-foreground truncate">{assembly.name}</div>
+            {assembly._isCustom && (
+              <span className="text-xs bg-accent/20 text-accent px-1 py-0.5 rounded font-medium flex-shrink-0">custom</span>
+            )}
+          </div>
           <div className="text-xs text-muted-foreground mt-0.5 leading-tight">{assembly.description}</div>
         </div>
         {justAdded && (
@@ -43,6 +81,9 @@ function AssemblyCard({ assembly, priceMap, onApply }) {
             <span className="ml-2 text-xs opacity-70">{comp.unit}</span>
           </div>
         ))}
+        {assembly.components.length === 0 && (
+          <div className="text-xs text-destructive italic">No formula fields set — edit this assembly in Price List → Assemblies.</div>
+        )}
       </div>
 
       <div className="flex items-center gap-2 pt-1 border-t border-border">
@@ -60,6 +101,7 @@ function AssemblyCard({ assembly, priceMap, onApply }) {
         <Button
           size="sm"
           onClick={handleAdd}
+          disabled={assembly.components.length === 0}
           className={`h-6 text-xs px-2 ml-auto gap-1 transition-all ${
             justAdded
               ? "bg-green-600 hover:bg-green-700 text-white"
@@ -100,7 +142,15 @@ function CategorySection({ category, assemblies, priceMap, onApply }) {
 }
 
 export default function QuickPickPanel({ inputs, onChange, materialPrices = [] }) {
-  // Build price map from materialPrices: keyed by generic_part_name
+  const [dbAssemblies, setDbAssemblies] = useState([]);
+
+  useEffect(() => {
+    base44.entities.Assembly.list("-updated_date", 200).then(data => {
+      const qp = (data || []).filter(a => a.quick_pick_category);
+      setDbAssemblies(qp.map(dbAssemblyToQuickPick));
+    }).catch(() => {});
+  }, []);
+
   const priceMap = materialPrices.reduce((acc, p) => {
     if (!acc[p.generic_part_name]) acc[p.generic_part_name] = p.price;
     return acc;
@@ -118,30 +168,38 @@ export default function QuickPickPanel({ inputs, onChange, materialPrices = [] }
     });
   };
 
+  // Merge: DB custom assemblies shown first within each category, then hardcoded
+  const allByCategory = ALL_CATEGORIES.map(cat => {
+    const custom = dbAssemblies.filter(a => a.category === cat);
+    const builtin = QUICK_PICK_ASSEMBLIES.filter(a => a.category === cat);
+    return { cat, assemblies: [...custom, ...builtin] };
+  }).filter(({ assemblies }) => assemblies.length > 0);
+
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <Zap className="w-4 h-4 text-accent" />
-        <div>
-          <div className="text-sm font-semibold text-foreground">Quick Pick Assemblies</div>
-          <div className="text-xs text-muted-foreground">Click "Add" to apply component quantities to this section's takeoff</div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Zap className="w-4 h-4 text-accent" />
+          <div>
+            <div className="text-sm font-semibold text-foreground">Quick Pick Assemblies</div>
+            <div className="text-xs text-muted-foreground">Click "Add" to apply component quantities to this section's takeoff</div>
+          </div>
         </div>
+        {dbAssemblies.length > 0 && (
+          <span className="text-xs text-accent font-medium">{dbAssemblies.length} custom</span>
+        )}
       </div>
 
       <div className="space-y-2">
-        {QUICK_PICK_CATEGORIES.map(cat => {
-          const assemblies = QUICK_PICK_ASSEMBLIES.filter(a => a.category === cat);
-          if (assemblies.length === 0) return null;
-          return (
-            <CategorySection
-              key={cat}
-              category={cat}
-              assemblies={assemblies}
-              priceMap={priceMap}
-              onApply={handleApply}
-            />
-          );
-        })}
+        {allByCategory.map(({ cat, assemblies }) => (
+          <CategorySection
+            key={cat}
+            category={cat}
+            assemblies={assemblies}
+            priceMap={priceMap}
+            onApply={handleApply}
+          />
+        ))}
       </div>
     </div>
   );
