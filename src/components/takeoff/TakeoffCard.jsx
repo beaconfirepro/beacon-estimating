@@ -166,6 +166,11 @@ export default function TakeoffCard({ takeoff, type, onUpdate, onDelete }) {
                 ))}
               </div>
 
+              {/* Quick Pick Tab */}
+              {activeTab === "quickpick" && (
+                <QuickPickPanel inputs={inputs} onChange={handleInputChange} materialPrices={materialPrices} />
+              )}
+
               {/* Inputs Tab */}
               {activeTab === "inputs" && (
                 <SprinklerInputForm inputs={inputs} onChange={handleInputChange} />
