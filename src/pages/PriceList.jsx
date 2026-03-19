@@ -216,9 +216,56 @@ function NewPartForm({ onSave, onCancel, defaultPartName, defaultCategory }) {
 // ASSEMBLIES TAB
 // ─────────────────────────────────────────────────────────────────────────────
 
-function AssemblyComponentRow({ comp, allPartNames, onChange, onRemove }) {
+const FORMULA_FIELDS = [
+  { field: "heads_concealed",       label: "Concealed Head" },
+  { field: "heads_pendant",         label: "Pendant Head" },
+  { field: "heads_upright",         label: "Upright Head" },
+  { field: "heads_sidewall",        label: "Sidewall Head" },
+  { field: "pipe_1in_lf",           label: '1" Pipe (LF)' },
+  { field: "pipe_1_25in_lf",        label: '1¼" Pipe (LF)' },
+  { field: "pipe_1_5in_lf",         label: '1½" Pipe (LF)' },
+  { field: "pipe_2in_lf",           label: '2" Pipe (LF)' },
+  { field: "pipe_2_5in_lf",         label: '2½" Pipe (LF)' },
+  { field: "pipe_3in_lf",           label: '3" Pipe (LF)' },
+  { field: "pipe_4in_lf",           label: '4" Pipe (LF)' },
+  { field: "thr_elbow_1in",         label: '1" Elbow (Thr)' },
+  { field: "thr_tee_1in",           label: '1" Tee (Thr)' },
+  { field: "thr_reducer_1in",       label: '1" Reducer (Thr)' },
+  { field: "thr_coupling_1_25in",   label: '1¼" Coupling (Thr)' },
+  { field: "thr_reducer_1_25in",    label: '1¼" Reducer (Thr)' },
+  { field: "grv_coupling_2_5in",    label: '2½" Coupling (Grv)' },
+  { field: "grv_elbow_2_5in",       label: '2½" Elbow (Grv)' },
+  { field: "grv_tee_2_5in",         label: '2½" Tee (Grv)' },
+  { field: "grv_reducer_2_5in",     label: '2½" Reducer (Grv)' },
+  { field: "grv_coupling_3in",      label: '3" Coupling (Grv)' },
+  { field: "grv_elbow_3in",         label: '3" Elbow (Grv)' },
+  { field: "grv_tee_3in",           label: '3" Tee (Grv)' },
+  { field: "grv_coupling_4in",      label: '4" Coupling (Grv)' },
+  { field: "grv_elbow_4in",         label: '4" Elbow (Grv)' },
+  { field: "grv_tee_4in",           label: '4" Tee (Grv)' },
+  { field: "hangers_1in_2in",       label: 'Hanger 1"-2"' },
+  { field: "hangers_2_5in_4in",     label: 'Hanger 2.5"-4"' },
+  { field: "butterfly_valves_4in",  label: 'Butterfly Valve 4"' },
+  { field: "butterfly_valves_6in",  label: 'Butterfly Valve 6"' },
+  { field: "alarm_check_valves_4in",label: 'Alarm Check Valve 4"' },
+  { field: "backflow_preventers_4in",label: 'Backflow Preventer 4"' },
+  { field: "flow_switches",         label: "Flow Switch" },
+  { field: "tamper_switches",       label: "Tamper Switch" },
+  { field: "pressure_gauges",       label: "Pressure Gauge" },
+  { field: "drain_valves",          label: 'Drain Valve 2"' },
+  { field: "inspector_test_conns",  label: "Inspector Test Conn" },
+  { field: "riser_assemblies",      label: "Riser Assembly" },
+  { field: "seismic_braces",        label: "Seismic Brace" },
+];
+
+const QP_CATEGORIES = [
+  "", "Quick Pick: Heads", "Quick Pick: Risers", "Quick Pick: Mains",
+  "Quick Pick: Branchline (Threaded)", "Quick Pick: Branchline (Grooved)", "Quick Pick: Valves & Trim"
+];
+
+function AssemblyComponentRow({ comp, allPartNames, onChange, onRemove, isQuickPick }) {
   return (
-    <div className="flex items-center gap-2 py-1">
+    <div className="flex items-start gap-2 py-1">
       <div className="flex-1">
         <select
           value={comp.generic_part_name}
@@ -238,7 +285,19 @@ function AssemblyComponentRow({ comp, allPartNames, onChange, onRemove }) {
           placeholder="Qty"
         />
       </div>
-      <div className="w-32">
+      {isQuickPick && (
+        <div className="w-44">
+          <select
+            value={comp.formula_field || ""}
+            onChange={e => onChange({ ...comp, formula_field: e.target.value })}
+            className="w-full h-7 text-xs border border-input rounded-md px-2 bg-transparent"
+          >
+            <option value="">— formula field —</option>
+            {FORMULA_FIELDS.map(f => <option key={f.field} value={f.field}>{f.label}</option>)}
+          </select>
+        </div>
+      )}
+      <div className="w-28">
         <Input
           value={comp.notes || ""}
           onChange={e => onChange({ ...comp, notes: e.target.value })}
@@ -246,7 +305,7 @@ function AssemblyComponentRow({ comp, allPartNames, onChange, onRemove }) {
           placeholder="Notes (opt)"
         />
       </div>
-      <button onClick={onRemove} className="text-destructive hover:text-destructive/80">
+      <button onClick={onRemove} className="text-destructive hover:text-destructive/80 mt-1">
         <X className="w-4 h-4" />
       </button>
     </div>
