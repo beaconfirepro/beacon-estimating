@@ -12,7 +12,7 @@ import { calculateSprinklerTakeoff, DEFAULT_SPRINKLER_INPUTS } from "@/lib/sprin
 
 export default function TakeoffCard({ takeoff, type, onUpdate, onDelete }) {
   const [expanded, setExpanded] = useState(true);
-  const [activeTab, setActiveTab] = useState("inputs");
+  const [activeTab, setActiveTab] = useState("quickpick");
   const [saving, setSaving] = useState(false);
   const [autoSaved, setAutoSaved] = useState(false);
   const [materialPrices, setMaterialPrices] = useState([]);
