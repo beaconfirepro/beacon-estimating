@@ -580,7 +580,6 @@ function NewAssemblyForm({ allPartNames, onSave, onCancel }) {
         <div className="flex items-center gap-2 mb-1 text-xs text-muted-foreground font-medium">
           <span className="flex-1">Part</span>
           <span className="w-20 text-right">Qty</span>
-          {isQuickPick && <span className="">Basis Override</span>}
           <span className="w-28">Notes</span>
           <span className="w-4"></span>
         </div>
@@ -588,7 +587,6 @@ function NewAssemblyForm({ allPartNames, onSave, onCancel }) {
           ? <p className="text-xs text-muted-foreground italic">Add parts to this assembly.</p>
           : data.components.map((comp, idx) => (
             <AssemblyComponentRow key={idx} comp={comp} allPartNames={allPartNames}
-              isQuickPick={isQuickPick}
               onChange={(c) => updateComponent(idx, c)} onRemove={() => removeComponent(idx)} />
           ))}
       </div>
