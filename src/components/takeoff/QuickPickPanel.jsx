@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, ChevronDown, ChevronUp, Zap } from "lucide-react";
+import { Plus, ChevronDown, ChevronUp, Zap, CheckCircle2 } from "lucide-react";
 import { QUICK_PICK_ASSEMBLIES, QUICK_PICK_CATEGORIES } from "@/lib/quickPickAssemblies";
+import { toast } from "sonner";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
