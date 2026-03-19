@@ -430,7 +430,7 @@ function AssemblyCard({ assembly, allPartNames, priceMap, activeIds, onSave, onD
                   </div>
                 </div>
                 {draft.quick_pick_category && (
-                  <p className="text-xs text-muted-foreground">Set the <strong>Formula Field</strong> for each component below so quantities flow into the takeoff engine.</p>
+                  <p className="text-xs text-muted-foreground">Set the <strong>Basis</strong> for each component below so quantities flow into the takeoff engine.</p>
                 )}
               </div>
 
