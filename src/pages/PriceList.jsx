@@ -746,7 +746,7 @@ export default function PriceList() {
             { key: "parts", icon: Package, label: "Parts" },
             { key: "assemblies", icon: Layers, label: "Assemblies" },
           ].map(({ key, icon: Icon, label }) => (
-            <button key={key} onClick={() => setTab(key)}
+            <button key={key} onClick={() => { setTab(key); setFilterCat("all"); setSearch(""); }}
               className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 tab === key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}>
