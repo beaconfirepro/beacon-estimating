@@ -264,6 +264,8 @@ const QP_CATEGORIES = [
 ];
 
 function AssemblyComponentRow({ comp, allPartNames, onChange, onRemove, isQuickPick }) {
+  const hasOverride = !!(comp.formula_field);
+
   return (
     <div className="flex items-start gap-2 py-1">
       <div className="flex-1">
@@ -286,15 +288,29 @@ function AssemblyComponentRow({ comp, allPartNames, onChange, onRemove, isQuickP
         />
       </div>
       {isQuickPick && (
-        <div className="w-44">
-          <select
-            value={comp.formula_field || ""}
-            onChange={e => onChange({ ...comp, formula_field: e.target.value })}
-            className="w-full h-7 text-xs border border-input rounded-md px-2 bg-transparent"
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => onChange({ ...comp, formula_field: hasOverride ? "" : (FORMULA_FIELDS[0]?.field || "") })}
+            className={`h-7 px-2 text-xs rounded border transition-colors whitespace-nowrap ${
+              hasOverride
+                ? "border-accent bg-accent/10 text-accent"
+                : "border-border text-muted-foreground hover:border-accent/50"
+            }`}
+            title={hasOverride ? "Using per-component basis override" : "Click to override basis for this part"}
           >
-            <option value="">— basis —</option>
-            {FORMULA_FIELDS.map(f => <option key={f.field} value={f.field}>{f.label}</option>)}
-          </select>
+            {hasOverride ? "Override ✓" : "Override"}
+          </button>
+          {hasOverride && (
+            <select
+              value={comp.formula_field || ""}
+              onChange={e => onChange({ ...comp, formula_field: e.target.value })}
+              className="w-44 h-7 text-xs border border-accent/40 rounded-md px-2 bg-transparent"
+            >
+              <option value="">— basis —</option>
+              {FORMULA_FIELDS.map(f => <option key={f.field} value={f.field}>{f.label}</option>)}
+            </select>
+          )}
         </div>
       )}
       <div className="w-28">
