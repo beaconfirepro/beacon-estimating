@@ -143,6 +143,13 @@ export default function ProjectDetail() {
           </TabsContent>
 
           <TabsContent value="headlayout">
+            <HeadLayoutUpload
+              project={project}
+              onSave={handleSaveProject}
+            />
+          </TabsContent>
+
+          <TabsContent value="takeoff">
             <HeadLayout
               sprinklerTakeoffs={sprinklerTakeoffs}
               standpipeTakeoffs={standpipeTakeoffs}
