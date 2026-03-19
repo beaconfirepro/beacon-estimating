@@ -578,7 +578,7 @@ function NewAssemblyForm({ allPartNames, onSave, onCancel }) {
         <div className="flex items-center gap-2 mb-1 text-xs text-muted-foreground font-medium">
           <span className="flex-1">Part</span>
           <span className="w-20 text-right">Qty</span>
-          {isQuickPick && <span className="w-44">Formula Field</span>}
+          {isQuickPick && <span className="w-44">Basis</span>}
           <span className="w-28">Notes</span>
           <span className="w-4"></span>
         </div>
