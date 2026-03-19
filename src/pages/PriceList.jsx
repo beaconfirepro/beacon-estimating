@@ -318,7 +318,8 @@ function AssemblyCard({ assembly, allPartNames, priceMap, activeIds, onSave, onD
   const [draft, setDraft] = useState(assembly);
   const [saving, setSaving] = useState(false);
 
-  // Compute total cost from components using active prices
+  const isQuickPick = !!(draft.quick_pick_category);
+
   const totalCost = (assembly.components || []).reduce((sum, comp) => {
     const unitPrice = priceMap[comp.generic_part_name] || 0;
     return sum + unitPrice * (comp.quantity || 0);
@@ -334,7 +335,7 @@ function AssemblyCard({ assembly, allPartNames, priceMap, activeIds, onSave, onD
   const addComponent = () => {
     setDraft(prev => ({
       ...prev,
-      components: [...(prev.components || []), { generic_part_name: "", quantity: 1, notes: "" }]
+      components: [...(prev.components || []), { generic_part_name: "", quantity: 1, formula_field: "", notes: "" }]
     }));
   };
 
@@ -354,15 +355,18 @@ function AssemblyCard({ assembly, allPartNames, priceMap, activeIds, onSave, onD
   };
 
   return (
-    <div className="border border-border rounded-lg overflow-hidden">
+    <div className={`border rounded-lg overflow-hidden ${assembly.quick_pick_category ? "border-accent/40" : "border-border"}`}>
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-card hover:bg-muted/20 transition-colors">
         <button onClick={() => setOpen(o => !o)} className="flex items-center gap-3 flex-1 text-left">
           {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-          <div className="w-6 h-6 rounded bg-accent/10 flex items-center justify-center">
-            <Layers className="w-3.5 h-3.5 text-accent" />
+          <div className={`w-6 h-6 rounded flex items-center justify-center ${assembly.quick_pick_category ? "bg-accent/20" : "bg-accent/10"}`}>
+            <Layers className={`w-3.5 h-3.5 ${assembly.quick_pick_category ? "text-accent" : "text-accent"}`} />
           </div>
           <span className="font-medium text-sm text-foreground">{assembly.name}</span>
+          {assembly.quick_pick_category && (
+            <span className="text-xs bg-accent/10 text-accent px-1.5 py-0.5 rounded font-medium">⚡ {assembly.quick_pick_category}</span>
+          )}
           {assembly.category && (
             <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded capitalize">{assembly.category}</span>
           )}
@@ -408,6 +412,28 @@ function AssemblyCard({ assembly, allPartNames, priceMap, activeIds, onSave, onD
                 </div>
               </div>
 
+              {/* Quick Pick settings */}
+              <div className="border border-accent/30 rounded-lg p-3 bg-accent/5 space-y-2">
+                <div className="text-xs font-semibold text-accent uppercase tracking-wide">⚡ Quick Pick Settings</div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground font-medium">Quick Pick Category</label>
+                    <select value={draft.quick_pick_category || ""} onChange={e => setDraft(p => ({ ...p, quick_pick_category: e.target.value }))}
+                      className="mt-1 h-8 text-xs w-full border border-input rounded-md px-2 bg-transparent">
+                      {QP_CATEGORIES.map(c => <option key={c} value={c}>{c || "— Not a Quick Pick —"}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground font-medium">Unit Label</label>
+                    <Input value={draft.quick_pick_unit || ""} onChange={e => setDraft(p => ({ ...p, quick_pick_unit: e.target.value }))}
+                      className="mt-1 h-8 text-xs" placeholder="e.g. head, riser, 10 LF" />
+                  </div>
+                </div>
+                {draft.quick_pick_category && (
+                  <p className="text-xs text-muted-foreground">Set the <strong>Formula Field</strong> for each component below so quantities flow into the takeoff engine.</p>
+                )}
+              </div>
+
               {/* Component list */}
               <div>
                 <div className="flex items-center justify-between mb-1">
@@ -416,16 +442,18 @@ function AssemblyCard({ assembly, allPartNames, priceMap, activeIds, onSave, onD
                     <Plus className="w-3 h-3" /> Add Part
                   </Button>
                 </div>
-                <div className="flex items-center gap-2 mb-1 px-0 text-xs text-muted-foreground font-medium">
+                <div className="flex items-center gap-2 mb-1 text-xs text-muted-foreground font-medium">
                   <span className="flex-1">Part</span>
                   <span className="w-20 text-right">Qty</span>
-                  <span className="w-32">Notes</span>
+                  {isQuickPick && <span className="w-44">Formula Field</span>}
+                  <span className="w-28">Notes</span>
                   <span className="w-4"></span>
                 </div>
                 {(draft.components || []).length === 0
                   ? <p className="text-xs text-muted-foreground italic">No components yet. Click "Add Part".</p>
                   : (draft.components || []).map((comp, idx) => (
                     <AssemblyComponentRow key={idx} comp={comp} allPartNames={allPartNames}
+                      isQuickPick={isQuickPick}
                       onChange={(c) => updateComponent(idx, c)} onRemove={() => removeComponent(idx)} />
                   ))}
               </div>
