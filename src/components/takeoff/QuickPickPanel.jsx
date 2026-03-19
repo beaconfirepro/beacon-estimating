@@ -112,6 +112,10 @@ export default function QuickPickPanel({ inputs, onChange, materialPrices = [] }
       const addAmount = comp.quantity * qty;
       onChange(comp.field, Math.round((currentVal + addAmount) * 1000) / 1000);
     });
+    toast.success(`Added ${qty} × ${assembly.name} to takeoff`, {
+      description: `${assembly.components.length} items updated · check Takeoff Inputs tab`,
+      duration: 3000,
+    });
   };
 
   return (
