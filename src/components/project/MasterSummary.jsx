@@ -369,15 +369,18 @@ export default function MasterSummary({ project, sprinklerTakeoffs, standpipeTak
             { label: "Labor",    cost: grandLaborCost,    sell: grandLaborSell,    color: "bg-blue-500",   margin: expandMargins ? laborMargin   : overallMargin },
             { label: "Material", cost: grandMaterialCost, sell: grandMaterialSell, color: "bg-green-500",  margin: expandMargins ? materialMargin : overallMargin },
             { label: "Design",   cost: grandDesignCost,   sell: grandDesignSell,   color: "bg-orange-500", margin: expandMargins ? designMargin   : overallMargin },
-          ].map(({ label, cost, sell, color, margin }) => (
-            <div key={label} className="bg-card border border-border rounded-xl p-4 text-center">
-              <div className={`w-3 h-3 rounded-full ${color} mx-auto mb-2`} />
-              <div className="text-xs text-muted-foreground uppercase tracking-wider">{label}</div>
-              <div className="text-lg font-bold text-foreground mt-1">{fmt(sell)}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">Cost: {fmt(cost)}</div>
-              <div className="text-xs text-muted-foreground">{pctFmt(margin)} margin</div>
-            </div>
-          ))}
+          ].map(({ label, cost, sell, color, margin }) => {
+            const pctOfTotal = grandSell > 0 ? (sell / grandSell * 100).toFixed(1) : "0.0";
+            return (
+              <div key={label} className="bg-card border border-border rounded-xl p-4 text-center">
+                <div className={`w-3 h-3 rounded-full ${color} mx-auto mb-2`} />
+                <div className="text-xs text-muted-foreground uppercase tracking-wider">{label}</div>
+                <div className="text-lg font-bold text-foreground mt-1">{fmt(sell)}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Cost: {fmt(cost)}</div>
+                <div className="text-xs text-muted-foreground">{pctOfTotal}% of total · {pctFmt(margin)} margin</div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
