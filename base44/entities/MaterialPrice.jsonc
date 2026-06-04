@@ -1,0 +1,46 @@
+{
+  "name": "MaterialPrice",
+  "type": "object",
+  "properties": {
+    "item_number": {
+      "type": "integer"
+    },
+    "generic_part_name": {
+      "type": "string"
+    },
+    "supplier_name": {
+      "type": "string"
+    },
+    "supplier_part_name": {
+      "type": "string"
+    },
+    "supplier_part_number": {
+      "type": "string"
+    },
+    "price": {
+      "type": "number"
+    },
+    "list_price": {
+      "type": "number"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "pipe",
+        "fittings",
+        "hangers",
+        "sprinkler_heads",
+        "valves",
+        "misc"
+      ],
+      "default": "misc"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "generic_part_name"
+  ]
+}

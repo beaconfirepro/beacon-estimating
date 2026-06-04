@@ -1,0 +1,86 @@
+{
+  "name": "StandpipeTakeoff",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "horizontal_bulk",
+        "vertical"
+      ],
+      "default": "horizontal_bulk"
+    },
+    "area_name": {
+      "type": "string"
+    },
+    "section_number": {
+      "type": "integer",
+      "default": 1
+    },
+    "labor_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "factor": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "is_manual": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    "material_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "price": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "total_labor": {
+      "type": "number",
+      "default": 0
+    },
+    "total_material": {
+      "type": "number",
+      "default": 0
+    },
+    "total_design": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "name": "Project",
+  "type": "object",
+  "properties": {
+    "project_name": {
+      "type": "string",
+      "description": "Project name"
+    },
+    "street_address": {
+      "type": "string"
+    },
+    "city_state_zip": {
+      "type": "string"
+    },
+    "sales_rep": {
+      "type": "string"
+    },
+    "wsfp_project_number": {
+      "type": "string"
+    },
+    "gc_owner": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "in_progress",
+        "complete",
+        "submitted"
+      ],
+      "default": "draft"
+    },
+    "head_layout_pdf_url": {
+      "type": "string",
+      "description": "URL of the uploaded head layout PDF. Required for a complete estimate."
+    }
+  },
+  "required": [
+    "project_name"
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "name": "Assembly",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Assembly name"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "pipe",
+        "fittings",
+        "hangers",
+        "sprinkler_heads",
+        "valves",
+        "misc"
+      ],
+      "default": "misc"
+    },
+    "quick_pick_category": {
+      "type": "string",
+      "description": "If set, this assembly appears as a Quick Pick in takeoff. Leave blank to exclude from Quick Pick.",
+      "enum": [
+        "",
+        "Quick Pick: Heads",
+        "Quick Pick: Risers",
+        "Quick Pick: Mains",
+        "Quick Pick: Branchline (Threaded)",
+        "Quick Pick: Branchline (Grooved)",
+        "Quick Pick: Valves & Trim"
+      ]
+    },
+    "quick_pick_unit": {
+      "type": "string",
+      "description": "Unit label shown in Quick Pick (e.g. 'head', 'riser', '10 LF')"
+    },
+    "default_basis": {
+      "type": "string",
+      "description": "The formula_inputs field key that drives ALL components in this assembly (e.g. 'heads_concealed'). Can be overridden per component."
+    },
+    "components": {
+      "type": "array",
+      "description": "List of parts that make up this assembly",
+      "items": {
+        "type": "object",
+        "properties": {
+          "generic_part_name": {
+            "type": "string"
+          },
+          "formula_field": {
+            "type": "string",
+            "description": "Per-component basis override. If blank, inherits the assembly's default_basis."
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "labor_hours": {
+      "type": "number",
+      "default": 0,
+      "description": "Estimated labor hours to build this assembly"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
