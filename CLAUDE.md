@@ -62,29 +62,56 @@ then localStorage, then the `VITE_*` env defaults.
 - `src/main.jsx` → renders `src/App.jsx`.
 - `src/App.jsx` wires up providers in this order: `AuthProvider` →
   `QueryClientProvider` → `Router`. Routes are declared inline:
-  - `/dashboard` — `pages/Dashboard.jsx` (project list, default redirect target)
-  - `/project/:id` — `pages/ProjectDetail.jsx` (`:id` may be `"new"`)
-  - `/price-list` — `pages/PriceList.jsx` (material prices + assemblies admin)
+  - **Public auth routes:** `/login` (`pages/Login.jsx`), `/register`
+    (`pages/Register.jsx`), `/forgot-password` (`pages/ForgotPassword.jsx`),
+    `/reset-password` (`pages/ResetPassword.jsx`).
+  - **Protected routes** (wrapped in `ProtectedRoute`, which redirects
+    unauthenticated users to `/login`):
+    - `/` — redirects to `/dashboard`
+    - `/dashboard` — `pages/Dashboard.jsx` (project list)
+    - `/project/:id` — `pages/ProjectDetail.jsx` (`:id` may be `"new"`)
+    - `/price-list` — `pages/PriceList.jsx` (material prices + assemblies admin)
+  - `*` — `lib/PageNotFound.jsx`.
 - `src/pages.config.js` is **auto-generated** by Base44 — do not hand-edit it
   except the `mainPage` value. App routing is driven by `App.jsx`, not this file.
 
 ### Backend access (Base44)
 - `src/api/base44Client.js` creates the shared `base44` client. Import it as
   `import { base44 } from "@/api/base44Client"`.
-- **Entities** (Base44 data models) used in the app:
-  - `Project` — project metadata (name, address, sales rep, status, notes, …)
-  - `SprinklerTakeoff` — a fire-sprinkler take-off section for a project
-  - `StandpipeTakeoff` — a standpipe/bulk take-off section for a project
-  - `MaterialPrice` — material price list entries
-  - `Assembly` — saved quick-pick assemblies
+- **Entities** (Base44 data models). Schemas are checked into the repo as
+  `base44/entities/*.jsonc` (kept in sync with the Base44 platform) — read these
+  for the authoritative field list before touching entity code:
+  - `Project` — project metadata. Fields: `project_name` (required),
+    `street_address`, `city_state_zip`, `sales_rep`, `wsfp_project_number`,
+    `gc_owner`, `date`, `notes`, `status` (`draft` | `in_progress` | `complete`
+    | `submitted`), `head_layout_pdf_url`.
+  - `SprinklerTakeoff` — a fire-sprinkler take-off section. Fields: `project_id`
+    (required), `area_name`, `section_number`, `formula_inputs` (the high-level
+    inputs fed to the formula engine), `labor_items[]`, `material_items[]`,
+    `total_labor`, `total_material`, `total_design`, `notes`.
+  - `StandpipeTakeoff` — a standpipe/bulk take-off section. Like
+    `SprinklerTakeoff` plus a `type` (`horizontal_bulk` | `vertical`); has no
+    `formula_inputs`.
+  - `MaterialPrice` — price-list entries: `generic_part_name` (required),
+    `supplier_*` fields, `price`, `list_price`, `category` (`pipe` | `fittings`
+    | `hangers` | `sprinkler_heads` | `valves` | `misc`), `last_updated`.
+  - `Assembly` — saved assemblies. `name` (required), `category`,
+    `quick_pick_category` (when set, surfaces the assembly in the takeoff Quick
+    Pick), `quick_pick_unit`, `default_basis`, `components[]`, `labor_hours`.
+  - `User` — Base44 platform user with an app `role` (`admin` | `user`).
   - CRUD patterns: `base44.entities.X.list(sort, limit)`,
     `.filter({ field }, sort, limit)`, `.create(data)`, `.update(id, data)`,
     `.delete(id)`.
 - **Integrations:** file uploads via
   `base44.integrations.Core.UploadFile({ file })` (see `HeadLayoutUpload.jsx`).
 - **Auth:** `src/lib/AuthContext.jsx` provides `useAuth()` and handles public
-  settings, `auth.me()`, login redirect, and `user_not_registered` /
-  `auth_required` states. `App.jsx` gates rendering on the auth/loading state.
+  settings, `auth.me()`, and the `user_not_registered` / `auth_required` states.
+  Login is email/password (`base44.auth.loginViaEmailPassword`) or a provider
+  (`base44.auth.loginWithProvider("google", …)`) — see `pages/Login.jsx` /
+  `pages/Register.jsx`. `components/ProtectedRoute.jsx` gates the app routes via
+  an `<Outlet>`, showing a loading fallback, `UserNotRegisteredError`, or the
+  unauthenticated redirect as appropriate. Shared auth-page chrome lives in
+  `components/AuthLayout.jsx` (`GoogleIcon.jsx` is the provider button icon).
 
 ### Domain / business logic (the important part)
 - `src/lib/sprinklerFormulas.js` — **the estimating engine.**
@@ -126,8 +153,8 @@ keys, and the quick-pick component `field`s in `quickPickAssemblies.js`.
 - **Class merging:** use `cn()` from `src/lib/utils.js` (clsx + tailwind-merge).
 - **Toasts:** prefer `import { toast } from "sonner"`.
 - **Money:** format with `toLocaleString("en-US", { minimumFractionDigits: 2 })`.
-- **Data models:** don't invent new entity fields casually — entity schemas live
-  on the Base44 side and must stay consistent with the Builder.
+- **Data models:** don't invent new entity fields casually — entity schemas are
+  mirrored in `base44/entities/*.jsonc` and must stay consistent with the Builder.
 
 ## Working with Base44
 
@@ -135,7 +162,9 @@ keys, and the quick-pick component `field`s in `quickPickAssemblies.js`.
   appear/change as a sync completes. Avoid reformatting auto-generated files
   (`src/pages.config.js`, `src/components/ui/*`) unnecessarily.
 - Entity schema changes (new fields/entities) generally belong in the Base44
-  platform, not invented purely in front-end code.
+  platform, not invented purely in front-end code. The synced schemas live in
+  `base44/entities/*.jsonc` — treat them as generated/synced (don't hand-author
+  fields that don't exist on the platform).
 - `base44/.app.jsonc` holds the app id; `base44/config.jsonc` holds
   install/build/serve commands used by the platform.
 
